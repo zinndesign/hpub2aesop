@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>assumed-coordinate-space</key>
+	<string>{1080,1920}</string>
+	<key>views</key>
+	<array>
+		<dict>
+			<key>allow-user-interaction</key>
+			<true/>
+			<key>autoplay</key>
+			<true/>
+			<key>delay</key>
+			<string>0.0000</string>
+			<key>final-coordinates</key>
+			<string>{{0,0},{1080,1920}}</string>
+			<key>scale-pages-to-fit</key>
+			<true/>
+			<key>transparent-background</key>
+			<false/>
+			<key>url</key>
+			<string>url-data</string>
+			<key>view-type</key>
+			<string>webelement</string>
+		</dict>
+	</array>
+</dict>
+</plist>

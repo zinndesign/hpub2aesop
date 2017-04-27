@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>filename-version</key>
+	<string>3.0</string>
+	<key>pages</key>
+	<array></array>
+	<key>preferred-orientation</key>
+	<string>portrait</string>
+	<key>progressive-download</key>
+	<string>true</string>
+	<key>is-html-issue</key>
+	<string>true</string>
+	<key>progressive-download-thumbs</key>
+	<string>progressive-download-thumbs-data</string>
+	<key>show-status-bar</key>
+	<string>false</string>
+	<key>story-layout</key>
+	<string>horizontal</string>
+	<key>toc-page-number</key>
+	<integer>toc-page-number-data</integer>
+	<key>total-asset-size</key>
+	<string>total-asset-size-data</string>
+</dict>
+</plist>

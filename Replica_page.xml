@@ -1,0 +1,15 @@
+<array>
+    <dict>
+		<key>isAdvertisement</key>
+		<false/>
+		<key>section</key>
+		<string>section-data</string>
+		<key>smooth-scrolling</key>
+		<false/>
+		<key>story-zip-url</key>
+		<string>story-zip-url-data</string>
+		<key>title</key>
+		<string>title-data</string>
+	</dict>
+    <pages></pages>
+</array>
