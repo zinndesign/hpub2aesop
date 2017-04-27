@@ -283,7 +283,7 @@ foreach($devices as $device => $device_type) {
 			$thumb_img = str_replace('_portrait', '_portrait_thumb', $page_img);
 			
 			// PhantomJS creation of page images, based on device
-			$cmd = "phantomjs phantomjs/examples/rasterize.js $output $article_pages_dir$phantom_img " . $device_type['pixels'] . "px " . $device_type['zoom'];
+			$cmd = "phantomjs thirdparty/phantomjs/examples/rasterize.js $output $article_pages_dir$phantom_img " . $device_type['pixels'] . "px " . $device_type['zoom'];
 			echo "\n\n$cmd\n\n";
 			`$cmd`;
 			
