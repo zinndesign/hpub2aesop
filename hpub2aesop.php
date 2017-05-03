@@ -3,6 +3,7 @@
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 define("MAX_IMG_WIDTH", 1800); //1080//1800/2400
+define("MAX_IMG_HEIGHT", 2048);
 define("MOZCJPEG_QUALITY", 70);
 
 $script_dir = getcwd();
@@ -171,10 +172,11 @@ foreach($devices as $device => $device_type) {
 			
 			// check for oversize images, downsize to MAX_IMG_WIDTH constant value
 			// NOTE: as of December 2016, this should be happening in the .xin script -- commenting out exec calls
+			// NOTE: May 2017, switching to cap on height due to giant partial adverts
 			$imgpath = $article_pages_dir . 'images/' . $assets . '/img/';
 			foreach (glob($imgpath.'*.{jpg,jpeg,png}', GLOB_BRACE) as $image) {
-				//$command = "convert \"$image\" -verbose -resize ". MAX_IMG_WIDTH ."x\> -strip \"$image\"";
-				//`$command`;
+				$command = "convert \"$image\" -verbose -resize x". MAX_IMG_HEIGHT ."\> -strip \"$image\"";
+				`$command`;
 				
 				// if PNG, run pngquant to reduce
 				if(substr($image, -3) === 'png') {
@@ -283,7 +285,7 @@ foreach($devices as $device => $device_type) {
 			$thumb_img = str_replace('_portrait', '_portrait_thumb', $page_img);
 			
 			// PhantomJS creation of page images, based on device
-			$cmd = "phantomjs thirdparty/phantomjs/examples/rasterize.js $output $article_pages_dir$phantom_img " . $device_type['pixels'] . "px " . $device_type['zoom'];
+			$cmd = "phantomjs phantomjs/examples/rasterize.js $output $article_pages_dir$phantom_img " . $device_type['pixels'] . "px " . $device_type['zoom'];
 			echo "\n\n$cmd\n\n";
 			`$cmd`;
 			
