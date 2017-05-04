@@ -149,8 +149,9 @@ foreach($devices as $device => $device_type) {
 		mkdir( $article_pages_dir . 'images/', 0777, true );
 		
 		// identify the TOC - usually page 1 or 2
-		if(strtolower($article['title']) == 'table of contents') {
+		if(stripos($article['title'], 'table of contents') > -1) {
 			$tocpage = $key;
+			echo "TABLE OF CONTENTS: $key\n\n";
 		}
 		
 		// for multi-page, we need to loop through pages here
