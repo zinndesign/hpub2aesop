@@ -176,7 +176,7 @@ foreach($devices as $device => $device_type) {
 			// NOTE: May 2017, switching to cap on height due to giant partial adverts
 			$imgpath = $article_pages_dir . 'images/' . $assets . '/img/';
 			foreach (glob($imgpath.'*.{jpg,jpeg,png}', GLOB_BRACE) as $image) {
-				$command = "convert \"$image\" -verbose -resize x". MAX_IMG_HEIGHT ."\> -strip \"$image\"";
+				$command = "convert \"$image\" -verbose -resize ". MAX_IMG_HEIGHT ."x". MAX_IMG_HEIGHT ."\> -strip \"$image\"";
 				`$command`;
 				
 				// if PNG, run pngquant to reduce

@@ -4,6 +4,7 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
 define("MOZCJPEG_QUALITY", 70);
 define("MAX_IMG_HEIGHT", 2048);
+define("MAX_IMG_WIDTH", 1800);
 
 $script_dir = getcwd();
 $convert_path = trim(`which convert`); // for debugging ImageMagick issues
@@ -86,7 +87,7 @@ foreach($bookJSON_array['contents'] as &$article) {
 					echo "\n\nOPAQUE IMAGE: Converting to JPEG\n\n";
 					$newImage = substr($image, 0, -3) . 'jpg';
 					//$command = "convert \"$image\" -verbose -strip -quality 60% \"$newImage\"";
-					$command = "convert \"$image\" -verbose -strip -resize x". MAX_IMG_HEIGHT ."\> pnm:- | mozcjpeg -quality ".MOZCJPEG_QUALITY." > \"$newImage\"";
+					$command = "convert \"$image\" -verbose -strip -resize ". MAX_IMG_WIDTH ."x". MAX_IMG_HEIGHT ."\> pnm:- | mozcjpeg -quality ".MOZCJPEG_QUALITY." > \"$newImage\"";
 					`$command`;
 					
 					// remove the original image, update the filename where it appears
@@ -128,7 +129,7 @@ foreach($bookJSON_array['contents'] as &$article) {
 				// added April 2017 - mozjpeg compression
 				$image = $assetURL;
 				$tempImage = substr($image, 0, -4) . '_TMP.jpg';
-				$command = "convert \"$image\" -verbose -strip -resize x". MAX_IMG_HEIGHT ."\> pnm:- | mozcjpeg -quality ".MOZCJPEG_QUALITY." > $tempImage";
+				$command = "convert \"$image\" -verbose -strip -resize ". MAX_IMG_WIDTH ."x". MAX_IMG_HEIGHT ."\> pnm:- | mozcjpeg -quality ".MOZCJPEG_QUALITY." > $tempImage";
 				`$command`;
 				
 				// remove the original image, rename the temp image
