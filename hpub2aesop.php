@@ -5,6 +5,8 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 define("MAX_IMG_WIDTH", 1800); //1080//1800/2400
 define("MAX_IMG_HEIGHT", 2048);
 define("MOZCJPEG_QUALITY", 70);
+define("MIN_FILESIZE", 100000); // 100kb in bytes
+define("MIN_COLORS", 16);
 
 $script_dir = getcwd();
 $convert_path = trim(`which convert`); // for debugging ImageMagick issues
@@ -187,11 +189,15 @@ foreach($devices as $device => $device_type) {
 				
 				// if PNG, run pngquant to reduce
 				if(substr($image, -3) === 'png') {
-					// first, is there transparency? If not, we can convert to JPEG
+					// first, is there transparency? If not, we can potentially convert to JPEG
 					$command = "identify -format '%[opaque]' $image";
-					$result = `$command`;
+					$opaque = `$command`;
 					
-					if(strpos($result, 'true') > -1) {
+					// next, how many colors?
+					$command = "identify -format '%k' $image";
+					$colors = `$command`;
+					
+					if(strpos($opaque, 'true') > -1 && $colors >= MIN_COLORS && filesize($image) > MIN_FILESIZE) {
 						echo "\n\nOPAQUE IMAGE: Converting to JPEG\n\n";
 						$newImage = substr($image, 0, -3) . 'jpg';
 						//$command = "convert \"$image\" -verbose -strip -quality MOZCJPEG_QUALITY% \"$newImage\"";
