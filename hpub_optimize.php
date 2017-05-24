@@ -89,7 +89,7 @@ foreach($bookJSON_array['contents'] as &$article) {
 				$command = "identify -format '%k' $image";
 				$colors = `$command`;
 				
-				if(strpos($opaque, 'true') > -1 && $colors >= MIN_COLORS && filesize($image) > MIN_FILESIZE) {
+				if(strpos($opaque, 'true') > -1 && trim($colors) >= MIN_COLORS && filesize($image) > MIN_FILESIZE) {
 					echo "\n\nOPAQUE IMAGE: Converting to JPEG\n\n";
 					$newImage = substr($image, 0, -3) . 'jpg';
 					//$command = "convert \"$image\" -verbose -strip -quality 60% \"$newImage\"";
