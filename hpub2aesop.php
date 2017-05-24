@@ -69,7 +69,13 @@ chdir($script_dir);
 $book_json = json_decode ( file_get_contents($hpub_dir . 'book.json'), true );
 
 $tocpage = 1; // default
-$plist_page_template = file_get_contents('Replica_page.xml');
+
+// for brands that want the title metadata suppressed
+if(substr($issue, 0, 3) == 'ESQ') {
+	$plist_page_template = file_get_contents('Replica_page_notitle.xml');
+} else {
+	$plist_page_template = file_get_contents('Replica_page.xml');	
+}
 
 $page_entry_xml = <<<EOD
 <dict>

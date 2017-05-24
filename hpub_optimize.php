@@ -158,6 +158,10 @@ $new_json = json_encode($bookJSON_array, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PR
 $output_file = $output_dir . 'book.json';
 file_put_contents($output_file, $new_json);
 
+// delete all the thumbs in the root directory
+$command = "rm -f ". $output_dir ."*.png";
+`$command`;
+
 echo "\n\n############################# OPTIMIZATION COMPLETE #############################\n\n";
 echo "PATH TO CONVERTED ASSETS: $output_dir\n\n";
 ?>
