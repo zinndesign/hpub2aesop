@@ -59,11 +59,12 @@ foreach($bookJSON_array['contents'] as &$article) {
 			$counter = 1;
 			foreach($matches as $match) {
 				$link = $match[1];
-				// must be either articleref://, mailto:, http://, or https://
+				// must be either articleref://, mailto:, http://, https:// or #
 				if( strpos($link, 'http://')===false &&
 					strpos($link, 'https://')===false &&
 					strpos($link, 'articleref://')===false &&
-					strpos($link, 'mailto:')===false ) {
+					strpos($link, 'mailto:')===false &&
+					strpos($link, '#')===false ) {
 					die("\n\n**************** HALTING PROCESSING: bad link in " . $outputHTML . "(" . $match[0] . ")\n");
 				} else {
 					echo $counter . '. ' . $match[1] . "\n";
