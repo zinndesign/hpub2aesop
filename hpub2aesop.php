@@ -243,6 +243,9 @@ foreach($devices as $device => $device_type) {
 			// update the viewport meta tag maximum-scale to 3.0, in order to support zooming
 			$output_html = str_replace('maximum-scale=1', 'maximum-scale=3.0', $output_html);
 			
+			// new introduction of HTML doctype is breaking CSS - strip it out
+			$output_html = str_replace('<!doctype html>', '', $output_html);
+			
 			// Inception bug introduces line break before links - this fixes
 			$output_html = preg_replace('/\(\n\s*<a/', '(<a', $output_html);
 			

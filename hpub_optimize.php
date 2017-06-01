@@ -50,6 +50,10 @@ foreach($bookJSON_array['contents'] as &$article) {
 		
 		// Inception bug introduces line break before links - this fixes
 		$outputHTML_text = preg_replace('/\(\n\s*<a/', '(<a', $outputHTML_text);
+		
+		// new introduction of HTML doctype is breaking CSS - strip it out
+		$outputHTML_text = str_replace('<!doctype html>', '', $outputHTML_text);
+		
 		file_put_contents($outputHTML, $outputHTML_text);
 		
 		// check the HTML for bad links - causes problems for Texture
