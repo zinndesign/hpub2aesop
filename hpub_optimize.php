@@ -98,11 +98,11 @@ foreach($bookJSON_array['contents'] as &$article) {
 				$image = $assetURL;
 				
 				// first, is there transparency? If not, we can potentially convert to JPEG
-				$command = "identify -format '%[opaque]' $image";
+				$command = "identify -format '%[opaque]' \"$image\"";
 				$opaque = `$command`;
 				
 				// next, how many colors?
-				$command = "identify -format '%k' $image";
+				$command = "identify -format '%k' \"$image\"";
 				$colors = `$command`;
 				
 				if(strpos($opaque, 'true') > -1 && trim($colors) >= MIN_COLORS && filesize($image) > MIN_FILESIZE) {
@@ -139,9 +139,9 @@ foreach($bookJSON_array['contents'] as &$article) {
 					// update the asset URL path for sha1 below
 					$assetURL = $output_dir . $asset['url'];
 				} else {
-					$command = "pngquant --quality=50-70 --speed=1 --force --skip-if-larger --verbose --output $image $image";
+					$command = "pngquant --quality=50-70 --speed=1 --force --skip-if-larger --verbose --output \"$image\" \"$image\"";
 					`$command`;
-					$command = "optipng -clobber -verbose -fix -strip all $image";
+					$command = "optipng -clobber -verbose -fix -strip all \"$image\"";
 					`$command`;
 				}
 				// in either case, we've changed the hash, so we should update it
