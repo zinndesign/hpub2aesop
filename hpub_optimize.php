@@ -14,27 +14,38 @@ $convert_path = trim(`which convert`); // for debugging ImageMagick issues
 // check for all required arguments
 // first argument is always name of script!
 if ($argc < 2) {
-    die("Usage: hpub_optimize.php <\"path to hpub directory\">");
+    die("\nUsage: hpub_optimize.php <\"path to hpub zip file\">\n\n");
 }
 
 // remove first argument
 array_shift($argv);
 
 // get and use remaining arguments
-$hpub_dir = trim( $argv[0] );
-$hpub_dir = str_replace('\\','',$hpub_dir);
+$hpub_zip = trim( $argv[0] );
+$hpub_zip = str_replace('\\','',$hpub_zip);
+$optimized_zip = substr($hpub_zip, 0, -4) . '_OPTIMIZED.zip';
 
-$output_dir = $hpub_dir . '_OPTIMIZED';
+if( substr($hpub_zip, -3) != 'zip') {
+	die("\nERROR: Input file must be a zip file!\n\n");
+}
+
+// create the directory based on the zipfile
+$output_dir = substr($hpub_zip, 0, -4) . '_OPTIMIZED';
 
 // if this is a repeat conversion, dump the existing optimized dir
 `rm -rf "$output_dir"`;
 
-// first, duplicate the folder
-echo "Creating optimized copy at $output_dir\n\n";
-`cp -aR  "$hpub_dir" "$output_dir"`;
+// first, create the folder
+echo "Creating asset directory at $output_dir\n\n";
+mkdir($output_dir);
 
 // make sure closing slash is in directory path
 $output_dir = $output_dir . '/';
+
+// next, unzip the files into the directory
+$output = `unzip -o "$hpub_zip" -d "$output_dir"`;
+echo "UNZIPPING FILES:\n" . $output . "\n";
+
 $bookJSON = $output_dir . 'book.json';
 $bookJSON_text = file_get_contents($bookJSON);
 
@@ -173,6 +184,16 @@ file_put_contents($output_file, $new_json);
 $command = "rm -f ". $output_dir ."*.png";
 `$command`;
 
+// zip the files
+chdir($output_dir);
+$input = `zip -rv "$optimized_zip" ./ --exclude="*/._*"`;
+echo "RE-ZIPPING FILES:\n" . $input . "\n";
+
+chdir($script_dir);
+
+// remove the asset directory
+//`rm -rf "$output_dir"`;
+
 echo "\n\n############################# OPTIMIZATION COMPLETE #############################\n\n";
-echo "PATH TO CONVERTED ASSETS: $output_dir\n\n";
+echo "PATH TO OPTIMIZED ZIPFILE: $optimized_zip\n\n";
 ?>
