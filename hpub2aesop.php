@@ -70,7 +70,7 @@ chdir($script_dir);
 // book.json contents
 $book_json = json_decode ( file_get_contents($hpub_dir . 'book.json'), true );
 
-$tocpage = 1; // default
+$tocpage = 0; // default
 
 // for brands that want the title metadata suppressed
 if(substr($issue, 0, 3) == 'ESQ') {
@@ -158,11 +158,13 @@ foreach($devices as $device => $device_type) {
 		
 		// identify the TOC - usually page 1 or 2
 		// June 2017: added more matching criteria
-		if( stripos($article['title'], 'table of contents') > -1 ||
-		   stripos($article['title'], 'contents') > -1 ||
-		   stripos($article['section'], 'table of contents') > -1) {
-			$tocpage = $key;
-			echo "TABLE OF CONTENTS: title=".$article['title']." section=".$article['section']." key=$key\n\n";
+		if($tocpage == 0) { // init value
+			if( stripos($article['title'], 'table of contents') > -1 ||
+			   stripos($article['title'], 'contents') > -1 ||
+			   stripos($article['section'], 'table of contents') > -1) {
+				$tocpage = $key;
+				echo "TABLE OF CONTENTS: title=".$article['title']." section=".$article['section']." key=$key\n\n";
+			}
 		}
 		
 		// for multi-page, we need to loop through pages here
