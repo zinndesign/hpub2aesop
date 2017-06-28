@@ -160,7 +160,8 @@ foreach($devices as $device => $device_type) {
 		// June 2017: added more matches
 		if( stripos($article['title'], 'table of contents') > -1 ||
 		   stripos($article['title'], 'contents') > -1 ||
-		   stripos($article['title'], 'toc') == 0 ) {
+		   stripos($article['title'], 'toc') == 0 ||
+		   stripos($article['section'], 'table of contents') > -1) {
 			$tocpage = $key;
 			echo "TABLE OF CONTENTS: $key\n\n";
 		}
