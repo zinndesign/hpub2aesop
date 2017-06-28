@@ -157,7 +157,10 @@ foreach($devices as $device => $device_type) {
 		mkdir( $article_pages_dir . 'images/', 0777, true );
 		
 		// identify the TOC - usually page 1 or 2
-		if(stripos($article['title'], 'table of contents') > -1) {
+		// June 2017: added more matches
+		if( stripos($article['title'], 'table of contents') > -1 ||
+		   stripos($article['title'], 'contents') > -1 ||
+		   stripos($article['title'], 'toc') == 0 ) {
 			$tocpage = $key;
 			echo "TABLE OF CONTENTS: $key\n\n";
 		}
