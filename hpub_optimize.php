@@ -68,10 +68,9 @@ foreach($bookJSON_array['contents'] as &$article) {
 		file_put_contents($outputHTML, $outputHTML_text);
 		
 		// check the HTML for bad links - causes problems for Texture
-		$pattern = '/<a href="(\S+)">/i';
+		$pattern = '/<a href="(.*?)">/i';
 		preg_match_all($pattern, $outputHTML_text, $matches, PREG_SET_ORDER);
 		if( count($matches) > 0 ) {
-			$counter = 1;
 			foreach($matches as $match) {
 				$link = $match[1];
 				// must be either articleref://, mailto:, http://, https:// or #
@@ -81,10 +80,15 @@ foreach($bookJSON_array['contents'] as &$article) {
 					strpos($link, 'mailto:')===false &&
 					strpos($link, '#')===false ) {
 					die("\n\n**************** HALTING PROCESSING: bad link in " . $outputHTML . "(" . $match[0] . ")\n");
+				} else if(strpos($link, ' ')!==false) {
+					// added 7/21/17 - fix bad spaces in link and update HTML
+					$fixed_link = str_replace(' ','',$link);
+					$outputHTML_text = str_replace($link, $fixed_link, $outputHTML_text);
+					file_put_contents($outputHTML, $outputHTML_text);
+					echo $match[1] . " (spaces removed)\n";
 				} else {
-					echo $counter . '. ' . $match[1] . "\n";
+					echo $match[1] . " (valid link)\n";
 				}
-				$counter++;
 			}
 		}
 		
@@ -183,6 +187,12 @@ file_put_contents($output_file, $new_json);
 // delete all the thumbs in the root directory
 $command = "rm -f ". $output_dir ."*.png";
 `$command`;
+
+// remove the bad links log, if present
+$logfile = $output_dir . 'bad_links.log';
+if(file_exists($logfile)) {
+	`rm -f "$logfile"`;
+}
 
 // zip the files
 chdir($output_dir);
