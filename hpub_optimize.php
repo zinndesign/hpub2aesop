@@ -51,6 +51,8 @@ $bookJSON_text = file_get_contents($bookJSON);
 
 $bookJSON_array = json_decode ( file_get_contents($output_dir . 'book.json'), true );
 
+$fontfamily = array();
+
 foreach($bookJSON_array['contents'] as &$article) {
 	foreach($article['contents'] as &$entry) {
 		$outputHTML = $output_dir . $entry['url'];
@@ -88,6 +90,17 @@ foreach($bookJSON_array['contents'] as &$article) {
 					echo $match[1] . " (spaces removed)\n";
 				} else {
 					echo $match[1] . " (valid link)\n";
+				}
+			}
+		}
+		
+		// added 7/25/17: check for comma-separated font list - causes display problems in MAZ
+		$pattern = '/<span style="font-family:\s*(.*?)">.*?<\/span>/i';
+		preg_match_all($pattern, $outputHTML_text, $matches, PREG_SET_ORDER);
+		if( count($matches) > 0 ) {
+			foreach($matches as $match) {
+				if(strpos($match[1], ',')) {
+					$fontfamily[$entry['metadata']['id']][] = $match[0];
 				}
 			}
 		}
@@ -202,8 +215,13 @@ echo "RE-ZIPPING FILES:\n" . $input . "\n";
 chdir($script_dir);
 
 // remove the asset directory
-//`rm -rf "$output_dir"`;
+`rm -rf "$output_dir"`;
 
 echo "\n\n############################# OPTIMIZATION COMPLETE #############################\n\n";
 echo "PATH TO OPTIMIZED ZIPFILE: $optimized_zip\n\n";
+
+if(count($fontfamily) > 0) {
+	echo "PLEASE NOTE: THERE MAY BE FONT DISPLAY ISSUES IN THE ARTICLES BELOW:\n";
+	print_r($fontfamily);
+}
 ?>
