@@ -43,6 +43,16 @@ $bookJSON_text = file_get_contents($bookJSON);
 $bookJSON_array = json_decode ( file_get_contents($temp_dir . 'book.json'), true );
 
 $badlinks = array();
+$article_IDs = array(); // flat array for validating intra-article links
+
+echo "Generating array of article identifiers for articleref link validation...\n\n";
+// create an associative array of all articles in book.json
+foreach ($bookJSON_array["contents"] as $article) {
+	$id = $article['metadata']['id']; // article ID - use for articleref
+	$article_IDs[] = $id;
+}
+
+print_r($article_IDs);
 
 foreach($bookJSON_array['contents'] as $article) {
 	foreach($article['contents'] as $entry) {
@@ -61,11 +71,33 @@ foreach($bookJSON_array['contents'] as $article) {
 					strpos($link, 'articleref://')===false &&
 					strpos($link, 'mailto:')===false &&
 					strpos($link, '#')===false ) {
-						$badlinks[] = $outputHTML . ": " . $match[0];
+						$badlinks[] = $outputHTML . ": " . $match[0] . ' (missing or invalid protocol)';
+						echo $match[1] . " (missing or invalid protocol)\n";
 				} else if(strpos($link, ' ')!==false) {
-					$badlinks[] = $outputHTML . ": " . $match[0] . '(contains 1 or more spaces)';
+					$badlinks[] = $outputHTML . ": " . $match[0] . ' (contains 1 or more spaces)';
+					echo $match[1] . " (contains 1 or more spaces)\n";
+				} else if(strpos($link, 'articleref://')!==false) {
+					// get just the article identifier from the full link
+					$pattern = '/articleref:\/\/dc\/([a-zA-Z0-9-_&;]*)\/*.*?/i';
+					preg_match($pattern, htmlspecialchars_decode($link), $matches);
+					
+					// check if the link matches an article identifier in $article_IDs array
+					$matchtest = array_search($matches[1], $article_IDs);
+					if($matchtest===false) {
+						$badlinks[] = $outputHTML . ": " . $match[0] . ' (invalid article identifier)';
+						echo $match[1] . " (invalid article identifier)\n";
+					}
+				} else if(strpos($link, 'http') == 0) { // validate web url
+					$status = validateURL($link);
+					// NOTE: 403 and 406 are a result of the call coming from cURL and not a browser
+					if( ($status > 199 && $status < 400) || $status == 403 || $status = 406 ) {
+						echo $match[1] . " (valid link format - code $status)\n";
+					} else {
+						$badlinks[] = $outputHTML . ": " . $match[0] . " (URL did not load - code $status)";
+						echo $match[1] . " (URL did not load - code $status)\n";
+					}
 				} else {
-					echo $match[1] . "\n";
+					echo $match[1] . " (valid link format)\n";
 				}
 			}
 		}
@@ -93,5 +125,27 @@ if( count($badlinks) > 0 ) {
 	echo "\nSUCCESS! No badly formatted links were found in the HPUB.\n\nNOTE: You may still want to review the links listed above for accuracy.\n\n";
 	// remove the temp asset directory
 	`rm -rf "$temp_dir"`;
+}
+
+/**** FUNCTIONS ****/
+
+function validateURL($url) {
+    $curl = curl_init($url);
+    
+	curl_setopt($curl, CURLOPT_NOBODY, TRUE);
+	// prevent false 403 or 406 by setting user agent
+	curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/603.2.4 (KHTML, like Gecko) Version/10.1.1 Safari/603.2.4');
+	curl_setopt($curl, CURLOPT_FAILONERROR, TRUE);
+	curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+	
+    /* Get the HTML or whatever is linked in $url. */
+    $response = curl_exec($curl);
+
+    /* Check for 404 (file not found). */
+    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    curl_close($curl);
+	
+	return $httpCode;
 }
 ?>

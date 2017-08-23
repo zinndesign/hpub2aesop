@@ -52,6 +52,14 @@ $bookJSON_text = file_get_contents($bookJSON);
 $bookJSON_array = json_decode ( file_get_contents($output_dir . 'book.json'), true );
 
 $fontfamily = array();
+$article_IDs = array(); // flat array for validating intra-article links
+$badlinks = array();
+
+// create an associative array of all articles in book.json
+foreach ($bookJSON_array["contents"] as $article) {
+	$id = $article['metadata']['id']; // article ID - use for articleref
+	$article_IDs[] = $id;
+}
 
 foreach($bookJSON_array['contents'] as &$article) {
 	foreach($article['contents'] as &$entry) {
@@ -81,15 +89,27 @@ foreach($bookJSON_array['contents'] as &$article) {
 					strpos($link, 'articleref://')===false &&
 					strpos($link, 'mailto:')===false &&
 					strpos($link, '#')===false ) {
-					die("\n\n**************** HALTING PROCESSING: bad link in " . $outputHTML . "(" . $match[0] . ")\n");
+					$badlinks[] = $outputHTML . ": " . $match[0] . ' (missing or invalid protocol)';
+					echo $match[1] . " (missing or invalid protocol)\n";
 				} else if(strpos($link, ' ')!==false) {
 					// added 7/21/17 - fix bad spaces in link and update HTML
 					$fixed_link = str_replace(' ','',$link);
 					$outputHTML_text = str_replace($link, $fixed_link, $outputHTML_text);
 					file_put_contents($outputHTML, $outputHTML_text);
 					echo $match[1] . " (spaces removed)\n";
+				} else if(strpos($link, 'articleref://')!==false) { // check if the link matches an article identifier in $article_IDs array
+					// get just the article identifier from the full link
+					$pattern = '/articleref:\/\/dc\/([a-zA-Z0-9-_&;]*)\/*.*?/i';
+					preg_match($pattern, htmlspecialchars_decode($link), $matches);
+					
+					// check if the link matches an article identifier in $article_IDs array
+					$matchtest = array_search($matches[1], $article_IDs);
+					if(!$matchtest) {
+						$badlinks[] = $outputHTML . ": " . $match[0] . ' (invalid article identifier)';
+						echo $match[1] . " (invalid article identifier)\n";
+					}
 				} else {
-					echo $match[1] . " (valid link)\n";
+					echo $match[1] . " (valid link format)\n";
 				}
 			}
 		}
@@ -223,5 +243,11 @@ echo "PATH TO OPTIMIZED ZIPFILE: $optimized_zip\n\n";
 if(count($fontfamily) > 0) {
 	echo "PLEASE NOTE: THERE MAY BE FONT DISPLAY ISSUES IN THE ARTICLES BELOW:\n";
 	print_r($fontfamily);
+}
+
+if( count($badlinks) > 0 ) {
+	echo "\n\n" . count($badlinks) . " bad links were found in this HPUB, listed below:\n\n";
+	sort($badlinks);
+	print_r($badlinks);
 }
 ?>
