@@ -78,11 +78,12 @@ foreach($bookJSON_array['contents'] as &$article) {
 		file_put_contents($outputHTML, $outputHTML_text);
 		
 		// check the HTML for bad links - causes problems for Texture
-		$pattern = '/<a href="(.*?)">/i';
+		$pattern = '/<a href="(.*?)">(.*?)<\/a>/i';
 		preg_match_all($pattern, $outputHTML_text, $matches, PREG_SET_ORDER);
 		if( count($matches) > 0 ) {
 			foreach($matches as $match) {
 				$link = $match[1];
+				$content = $match[2];
 				// must be either articleref://, mailto:, http://, https:// or #
 				if( strpos($link, 'http://')===false &&
 					strpos($link, 'https://')===false &&
@@ -104,7 +105,7 @@ foreach($bookJSON_array['contents'] as &$article) {
 					
 					// check if the link matches an article identifier in $article_IDs array
 					$matchtest = array_search($matches[1], $article_IDs);
-					if(!$matchtest) {
+					if($matchtest===false) {
 						$badlinks[] = $outputHTML . ": " . $match[0] . ' (invalid article identifier)';
 						echo $match[1] . " (invalid article identifier)\n";
 					}

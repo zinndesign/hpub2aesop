@@ -43,6 +43,7 @@ $bookJSON_text = file_get_contents($bookJSON);
 $bookJSON_array = json_decode ( file_get_contents($temp_dir . 'book.json'), true );
 
 $badlinks = array();
+$emptylinks = array();
 $article_IDs = array(); // flat array for validating intra-article links
 
 echo "Generating array of article identifiers for articleref link validation...\n\n";
@@ -60,12 +61,18 @@ foreach($bookJSON_array['contents'] as $article) {
 		$outputHTML_text = file_get_contents($outputHTML);
 		
 		// check the HTML for bad links - causes problems for Texture
-		$pattern = '/<a href="(.*?)">/i';
+		$pattern = '/<a href="(.*?)">(.*?)<\/a>/i';
 		preg_match_all($pattern, $outputHTML_text, $matches, PREG_SET_ORDER);
 		if( count($matches) > 0 ) {
 			foreach($matches as $match) {
 				$link = $match[1];
+				$content = $match[2];
+				// link around <br> tag or empty content
+				/*if($content == '' || strpos($content, '<br') == 0) {
+					$emptylinks[] = $outputHTML . ": " . $match[0] . ' (no linked content)';
+					echo $match[0] . " (no linked content)\n";
 				// must be either articleref://, mailto:, http://, https:// or #
+				} else*/
 				if( strpos($link, 'http://')===false &&
 					strpos($link, 'https://')===false &&
 					strpos($link, 'articleref://')===false &&
@@ -86,18 +93,20 @@ foreach($bookJSON_array['contents'] as $article) {
 					if($matchtest===false) {
 						$badlinks[] = $outputHTML . ": " . $match[0] . ' (invalid article identifier)';
 						echo $match[1] . " (invalid article identifier)\n";
+					} else {
+						echo $match[1] . " (valid articleref link)\n";
 					}
 				} else if(strpos($link, 'http') == 0) { // validate web url
-					$status = validateURL($link);
-					// NOTE: 403 and 406 are a result of the call coming from cURL and not a browser
-					if( ($status > 199 && $status < 400) || $status == 403 || $status = 406 ) {
-						echo $match[1] . " (valid link format - code $status)\n";
-					} else {
-						$badlinks[] = $outputHTML . ": " . $match[0] . " (URL did not load - code $status)";
-						echo $match[1] . " (URL did not load - code $status)\n";
-					}
+					//$status = validateURL($link);
+					//// NOTE: 403 and 406 are a result of the call coming from cURL and not a browser
+					//if( ($status > 199 && $status < 400) || $status == 403 || $status = 406 ) {
+					//	echo $match[1] . " (valid link format - code $status)\n";
+					//} else {
+					//	$badlinks[] = $outputHTML . ": " . $match[0] . " (URL did not load - code $status)";
+					//	echo $match[1] . " (URL did not load - code $status)\n";
+					//}
 				} else {
-					echo $match[1] . " (valid link format)\n";
+					echo $match[1] . " (valid web URL)\n";
 				}
 			}
 		}
@@ -112,11 +121,11 @@ if(file_exists($logfile)) {
 }
 
 if( count($badlinks) > 0 ) {
-	echo "\n\n" . count($badlinks) . " bad links were found in this HPUB, listed below and stored in a log file:\n\n";
+	echo "\n\n" . count($badlinks) . " bad links were found in this HPUB, listed below:\n\n";
 	sort($badlinks);
 	print_r($badlinks);
-	file_put_contents($logfile, implode("\n", $badlinks));
-	echo "\nPATH TO BAD LINKS LOG: $logfile\n\n";
+	//file_put_contents($logfile, implode("\n", $badlinks));
+	//echo "\nPATH TO BAD LINKS LOG: $logfile\n\n";
 	
 	// remove __MACOSX folder
 	$macosx = $temp_dir . '__MACOSX';
@@ -126,6 +135,13 @@ if( count($badlinks) > 0 ) {
 	// remove the temp asset directory
 	`rm -rf "$temp_dir"`;
 }
+
+//if( count($emptylinks) > 0 ) {
+//	echo "\n\n" . count($emptylinks) . " empty links were found in this HPUB, listed below:\n\n";
+//	sort($emptylinks);
+//	print_r($emptylinks);
+//	echo "\nThese links will not function. This is due to an Inception bug.";
+//}
 
 /**** FUNCTIONS ****/
 
@@ -138,6 +154,7 @@ function validateURL($url) {
 	curl_setopt($curl, CURLOPT_FAILONERROR, TRUE);
 	curl_setopt($curl, CURLOPT_FOLLOWLOCATION, TRUE);
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+	curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 	
     /* Get the HTML or whatever is linked in $url. */
     $response = curl_exec($curl);
