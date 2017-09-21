@@ -13,6 +13,7 @@ define("QUALITY", 90);
 define("IMG_WIDTH", 1536);
 
 // associative array of brands to define variable image height
+// add new brands to this list as needed
 $img_height_by_brand = array(
 	'ABB' => 2048,
 	'CDB' => 2048,
@@ -21,6 +22,7 @@ $img_height_by_brand = array(
 	'EDC' => 1994,
 	'ELM' => 1900,
 	'ESQ' => 2048,
+	'ESB' => 2048,
 	'FNM' => 1882,
 	'GHK' => 2048,
 	'HBX' => 2048,
@@ -29,6 +31,7 @@ $img_height_by_brand = array(
 	'MCX' => 1900,
 	'OPR' => 2048,
 	'PMX' => 2048,
+	'PWM' => 2048,
 	'RBK' => 2048,
 	'ROA' => 2048,
 	'SEV' => 2048,
