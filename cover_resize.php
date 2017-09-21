@@ -57,6 +57,8 @@ if(strlen($issue_date) != 4) {
 
 if(strtolower( substr($image_png, -3)) != 'png') {
 	$errors[] = 'Input file must be a PNG. Please obtain a valid PNG file of the cover image.';
+} elseif(strpos($image_png, ' ') > -1) {
+	$errors[] = 'Input PNG filename has spaces - please remove and try again.';
 } else {
 	// we have a PNG, so we can get the dimensions
 	$imgsize = getimagesize($image_png);
@@ -82,7 +84,8 @@ $image_jpeg = implode('/', $split);
 
 echo $image_jpeg . "\n\n";
 
-$command = "convert \"$image_png\" -verbose -strip -resize ". IMG_WIDTH ."x". $img_height_by_brand[$brand] ."\> pnm:- | mozcjpeg -quality ". QUALITY ." > \"$image_jpeg\"";
+$command = "convert \"$image_png\" -verbose -strip -resize ". IMG_WIDTH ."x". $img_height_by_brand[$brand] ."\! pnm:- | mozcjpeg -quality ". QUALITY ." > \"$image_jpeg\"";
+//$command = "convert \"$image_png\" -verbose -strip pnm:- | mozcjpeg -quality ".QUALITY." > \"$image_jpeg\"";
 
 echo $command . "\n";
 `$command`;
