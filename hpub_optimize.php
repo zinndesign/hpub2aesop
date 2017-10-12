@@ -85,14 +85,14 @@ foreach($bookJSON_array['contents'] as &$article) {
 				$link = $match[1];
 				$content = $match[2];
 				// must be either articleref://, mailto:, http://, https:// or #
-				if( strpos($link, 'http://')===false &&
-					strpos($link, 'https://')===false &&
-					strpos($link, 'articleref://')===false &&
-					strpos($link, 'mailto:')===false &&
-					strpos($link, '#')===false ) {
+				if( stripos($link, 'http://')===false &&
+					stripos($link, 'https://')===false &&
+					stripos($link, 'articleref://')===false &&
+					stripos($link, 'mailto:')===false &&
+					stripos($link, '#')===false ) {
 					$badlinks[] = $outputHTML . ": " . $match[0] . ' (missing or invalid protocol)';
 					echo $match[1] . " (missing or invalid protocol)\n";
-				} else if(strpos($link, ' ')!==false) {
+				} else if(stripos($link, ' ')!==false) {
 					// added 7/21/17 - fix bad spaces in link and update HTML
 					$fixed_link = str_replace(' ','',$link);
 					$outputHTML_text = str_replace($link, $fixed_link, $outputHTML_text);
@@ -120,7 +120,7 @@ foreach($bookJSON_array['contents'] as &$article) {
 		preg_match_all($pattern, $outputHTML_text, $matches, PREG_SET_ORDER);
 		if( count($matches) > 0 ) {
 			foreach($matches as $match) {
-				if(strpos($match[1], ',')) {
+				if(stripos($match[1], ',')) {
 					$fontfamily[$entry['metadata']['id']][] = $match[0];
 				}
 			}
@@ -143,7 +143,7 @@ foreach($bookJSON_array['contents'] as &$article) {
 				$command = "identify -format '%k' \"$image\"";
 				$colors = `$command`;
 				
-				if(strpos($opaque, 'true') > -1 && trim($colors) >= MIN_COLORS && filesize($image) > MIN_FILESIZE) {
+				if(stripos($opaque, 'true') > -1 && trim($colors) >= MIN_COLORS && filesize($image) > MIN_FILESIZE) {
 					echo "\n\nOPAQUE IMAGE: Converting to JPEG\n\n";
 					$newImage = substr($image, 0, -3) . 'jpg';
 					//$command = "convert \"$image\" -verbose -strip -quality 60% \"$newImage\"";

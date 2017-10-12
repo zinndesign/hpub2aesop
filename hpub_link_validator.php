@@ -7,7 +7,7 @@ $script_dir = getcwd();
 // check for all required arguments
 // first argument is always name of script!
 if ($argc < 2) {
-    die("\nUsage: hpub_link_validator.php <\"path to hpub zip file\">\n\n");
+    die("\nUsage: hpub_link_validator.php <\"path to hpub zip file\"> quick (optional - skips URL loads)\n\n");
 }
 
 // remove first argument
@@ -19,6 +19,12 @@ $hpub_zip = str_replace('\\','',$hpub_zip);
 
 if( substr($hpub_zip, -3) != 'zip') {
 	die("\nERROR: Input file must be a zip file!\n\n");
+}
+
+if( $argc == 3 ) {
+	$skip_url_loads = true;
+} else {
+	$skip_url_loads = false;
 }
 
 // create the directory based on the zipfile
@@ -73,17 +79,17 @@ foreach($bookJSON_array['contents'] as $article) {
 					echo $match[0] . " (no linked content)\n";
 				// must be either articleref://, mailto:, http://, https:// or #
 				} else*/
-				if( strpos($link, 'http://')===false &&
-					strpos($link, 'https://')===false &&
-					strpos($link, 'articleref://')===false &&
-					strpos($link, 'mailto:')===false &&
-					strpos($link, '#')===false ) {
+				if( stripos($link, 'http://')===false &&
+					stripos($link, 'https://')===false &&
+					stripos($link, 'articleref://')===false &&
+					stripos($link, 'mailto:')===false &&
+					stripos($link, '#')===false ) {
 						$badlinks[] = $outputHTML . ": " . $match[0] . ' (missing or invalid protocol)';
 						echo $match[1] . " (missing or invalid protocol)\n";
 				} else if(strpos($link, ' ')!==false) {
 					$badlinks[] = $outputHTML . ": " . $match[0] . ' (contains 1 or more spaces)';
 					echo $match[1] . " (contains 1 or more spaces)\n";
-				} else if(strpos($link, 'articleref://')!==false) {
+				} else if(stripos($link, 'articleref://')!==false) {
 					// get just the article identifier from the full link
 					$pattern = '/articleref:\/\/dc\/([a-zA-Z0-9-_&;]*)\/*.*?/i';
 					preg_match($pattern, htmlspecialchars_decode($link), $matches);
@@ -96,15 +102,15 @@ foreach($bookJSON_array['contents'] as $article) {
 					} else {
 						echo $match[1] . " (valid articleref link)\n";
 					}
-				} else if(strpos($link, 'http') == 0) { // validate web url
-					//$status = validateURL($link);
-					//// NOTE: 403 and 406 are a result of the call coming from cURL and not a browser
-					//if( ($status > 199 && $status < 400) || $status == 403 || $status = 406 ) {
-					//	echo $match[1] . " (valid link format - code $status)\n";
-					//} else {
-					//	$badlinks[] = $outputHTML . ": " . $match[0] . " (URL did not load - code $status)";
-					//	echo $match[1] . " (URL did not load - code $status)\n";
-					//}
+				} else if(stripos($link, 'http') == 0 && !$skip_url_loads) { // validate web url - skipped if extra param is present
+					$status = validateURL($link);
+					// NOTE: 403 and 406 are a result of the call coming from cURL and not a browser
+					if( ($status > 199 && $status < 400) || $status == 403 || $status = 406 ) {
+						echo $match[1] . " (valid link format - code $status)\n";
+					} else {
+						$badlinks[] = $outputHTML . ": " . $match[0] . " (URL did not load - code $status)";
+						echo $match[1] . " (URL did not load - code $status)\n";
+					}
 				} else {
 					echo $match[1] . " (valid web URL)\n";
 				}
