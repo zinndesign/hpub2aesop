@@ -66,6 +66,9 @@ foreach($bookJSON_array['contents'] as $article) {
 		$outputHTML = $temp_dir . $entry['url'];
 		$outputHTML_text = file_get_contents($outputHTML);
 		
+		// get the article ID from the metadata
+		$articleID = $entry['metadata']['id'];
+		
 		// check the HTML for bad links - causes problems for Texture
 		$pattern = '/<a href="(.*?)">(.*?)<\/a>/i';
 		preg_match_all($pattern, $outputHTML_text, $matches, PREG_SET_ORDER);
@@ -73,22 +76,23 @@ foreach($bookJSON_array['contents'] as $article) {
 			foreach($matches as $match) {
 				$link = $match[1];
 				$content = $match[2];
-				// link around <br> tag or empty content
-				/*if($content == '' || strpos($content, '<br') == 0) {
-					$emptylinks[] = $outputHTML . ": " . $match[0] . ' (no linked content)';
-					echo $match[0] . " (no linked content)\n";
+				$parts = explode('://', trim($link));
+				echo $articleID . ': ';
 				// must be either articleref://, mailto:, http://, https:// or #
-				} else*/
 				if( stripos($link, 'http://')===false &&
 					stripos($link, 'https://')===false &&
 					stripos($link, 'articleref://')===false &&
 					stripos($link, 'mailto:')===false &&
 					stripos($link, '#')===false ) {
-						$badlinks[] = $outputHTML . ": " . $match[0] . ' (missing or invalid protocol)';
+						$badlinks[] = $articleID . ": " . $match[0] . ' (missing or invalid protocol)';
 						echo $match[1] . " (missing or invalid protocol)\n";
 				} else if(strpos($link, ' ')!==false) {
-					$badlinks[] = $outputHTML . ": " . $match[0] . ' (contains 1 or more spaces)';
+					$badlinks[] = $articleID . ": " . $match[0] . ' (contains 1 or more spaces)';
 					echo $match[1] . " (contains 1 or more spaces)\n";
+				// anything after the protocol? Invalid if not - cURL returns a 200 so we have to check here
+				} else if(stripos($parts[0], 'http') === 0 && (count($parts) < 2 || strlen($parts[1]) < 3)) {
+					$badlinks[] = $articleID . ": " . $match[0] . " (missing or invalid domain)";
+					echo $match[1] . " (missing or invalid domain)\n";
 				} else if(stripos($link, 'articleref://')!==false) {
 					// get just the article identifier from the full link
 					$pattern = '/articleref:\/\/dc\/([a-zA-Z0-9-_&;]*)\/*.*?/i';
@@ -97,50 +101,38 @@ foreach($bookJSON_array['contents'] as $article) {
 					// check if the link matches an article identifier in $article_IDs array
 					$matchtest = array_search($matches[1], $article_IDs);
 					if($matchtest===false) {
-						$badlinks[] = $outputHTML . ": " . $match[0] . ' (invalid article identifier)';
+						$badlinks[] = $articleID . ": " . $match[0] . ' (invalid article identifier)';
 						echo $match[1] . " (invalid article identifier)\n";
 					} else {
 						echo $match[1] . " (valid articleref link)\n";
-					}
-				} else if(stripos($link, 'http') == 0 && !$skip_url_loads) { // validate web url - skipped if extra param is present
+					}					
+				} else if(stripos($link, 'http') === 0 && !$skip_url_loads) { // validate web url, unless skip param is present
 					$status = validateURL($link);
 					// NOTE: 403 and 406 are a result of the call coming from cURL and not a browser
 					if( ($status > 199 && $status < 400) || $status == 403 || $status = 406 ) {
-						echo $match[1] . " (valid link format - code $status)\n";
+						echo $match[1] . " (valid link format - $status)\n";
 					} else {
-						$badlinks[] = $outputHTML . ": " . $match[0] . " (URL did not load - code $status)";
-						echo $match[1] . " (URL did not load - code $status)\n";
+						$badlinks[] = $articleID . ": " . $match[0] . " (URL did not load - code $status)";
+						echo $match[1] . " (URL did not load - $status)\n";
 					}
 				} else {
-					echo $match[1] . " (valid web URL)\n";
+					echo $match[1] . " (valid web URL format)\n";
 				}
 			}
 		}
 	}
 }
 
-$logfile = $temp_dir . 'bad_links.log';
-
-// remove it if already there from past check
-if(file_exists($logfile)) {
-	`rm -f "$logfile"`;
-}
-
 if( count($badlinks) > 0 ) {
 	echo "\n\n" . count($badlinks) . " bad links were found in this HPUB, listed below:\n\n";
 	sort($badlinks);
 	print_r($badlinks);
-	//file_put_contents($logfile, implode("\n", $badlinks));
-	//echo "\nPATH TO BAD LINKS LOG: $logfile\n\n";
-	
-	// remove __MACOSX folder
-	$macosx = $temp_dir . '__MACOSX';
-	`rm -rf "$macosx"`;
 } else {
 	echo "\nSUCCESS! No badly formatted links were found in the HPUB.\n\nNOTE: You may still want to review the links listed above for accuracy.\n\n";
-	// remove the temp asset directory
-	`rm -rf "$temp_dir"`;
 }
+
+// remove the temp asset directory
+`rm -rf "$temp_dir"`;
 
 //if( count($emptylinks) > 0 ) {
 //	echo "\n\n" . count($emptylinks) . " empty links were found in this HPUB, listed below:\n\n";
@@ -152,7 +144,7 @@ if( count($badlinks) > 0 ) {
 /**** FUNCTIONS ****/
 
 function validateURL($url) {
-    $curl = curl_init($url);
+	$curl = curl_init($url);
     
 	curl_setopt($curl, CURLOPT_NOBODY, TRUE);
 	// prevent false 403 or 406 by setting user agent
