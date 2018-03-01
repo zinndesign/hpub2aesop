@@ -14,10 +14,12 @@ Lastly, the script runs the same link validation processes as the separate link 
 The HPUB Optimizer is a PHP script that is run from the command line on any Mac or *nix machine. The dependencies are as follows:
 
 * **PHP** (part of the standard install of Mac OS X)
-* **ImageMagick** (requires installation)
-* **mozcjpeg** (requires installation)
-* **pngquant** (requires installation)
-* **optipng** (requires installation)
+* **ImageMagick** ([requires installation](http://brewformulas.org/Imagemagick))
+* **mozcjpeg** ([requires installation](https://www.progville.com/frontend/optimizing-jpeg-images-mozjpeg/))
+* **pngquant** ([requires installation](http://brewformulas.org/pngquant))
+* **optipng** ([requires installation](http://brewformulas.org/optipng))
+
+(Note that the links above assume a Mac running OS X with [Homebrew](https://brew.sh/) installed. For alternative methods, Google is your friend.)
 
 To use the script, first copy it to your computer, making a note of the location - for example, `/Users/jzinn/Desktop/`. Then, open the Mac Terminal program and follow the steps below.
 
