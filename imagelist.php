@@ -10,10 +10,12 @@ $issue = trim( $argv[0] );
 $assets = rglob('{*.png,*.jpg,*.jpeg}',GLOB_BRACE,$issue);
 
 $total_asset_size = 0;
+$contents = '';
 $output = [];
 
 foreach ($assets as $image) {
-	if(strpos($image, 'portrait')===false && strpos($image, '_lo')===false && strpos($image, 'COS040117')===false) {
+	//if(strpos($image, 'portrait')===false && strpos($image, '_lo')===false && strpos($image, 'COS040117')===false) {
+	if(stripos($image, '_lo')===false) {
 		$bytes = filesize($image);
 		$output[] = basename($image) . "\t" . $bytes;
 		$total_asset_size += $bytes;
@@ -24,7 +26,9 @@ sort($output);
 
 $contents = implode("\n", $output) . "\n"  . 'TOTAL' . "\t" . human_filesize($total_asset_size) . "\n";
 
-$logfile = $issue . '.log';
+$logfile = substr($issue, 0, -1) . '.log';
+echo "**************$logfile**************\n\n";
+`rm -f $logfile`; // delete if existing
 file_put_contents($logfile, $contents);
 echo $contents;
 

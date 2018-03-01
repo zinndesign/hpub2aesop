@@ -16,27 +16,27 @@ define("IMG_WIDTH", 1536);
 // add new brands to this list as needed
 $img_height_by_brand = array(
 	'ABB' => 2048,
-	'CDB' => 2048,
+	'CDB' => 2148,
 	'CLX' => 2048,
 	'COS' => 2048,
 	'EDC' => 1994,
-	'ELM' => 1900,
-	'ESQ' => 2048,
+	'ELM' => 1880,
+	'ESQ' => 2022,
 	'ESB' => 2048,
-	'FNM' => 1882,
-	'GHK' => 2048,
-	'HBX' => 2048,
-	'HBZ' => 1856,
-	'HGV' => 2048,
-	'MCX' => 1900,
-	'OPR' => 2048,
+	'FNM' => 1964,
+	'GHK' => 2080,
+	'HBX' => 2022,
+	'HBZ' => 1880,
+	'HGV' => 1937, // 2048 thru 11/2017
+	'MCX' => 1880,
+	'OPR' => 1936,
 	'PMX' => 2048,
 	'PWM' => 2048,
-	'RBK' => 2048,
-	'ROA' => 2048,
-	'SEV' => 2048,
+	'RBK' => 2148,
+	'ROA' => 2088,
+	'SEV' => 2114,
 	'TCX' => 1882,
-	'VER' => 2048,
+	'VER' => 2022,
 	'WDY' => 2048
 );
 
@@ -45,7 +45,9 @@ array_shift($argv);
 
 $brand = strtoupper( trim( $argv[0] ) );
 $issue_date = trim( $argv[1] );
-$image_png = trim( $argv[2] );
+$src_image = trim( $argv[2] );
+
+$src_ext = strtolower( substr($src_image, -3)); // png or pdf
 
 // run error checks
 $errors = array();
@@ -58,13 +60,12 @@ if(strlen($issue_date) != 4) {
 	$errors[] = 'Issue date should be exactly four numbers (e.g. 1703); please fix.';
 }
 
-if(strtolower( substr($image_png, -3)) != 'png') {
-	$errors[] = 'Input file must be a PNG. Please obtain a valid PNG file of the cover image.';
-} elseif(strpos($image_png, ' ') > -1) {
-	$errors[] = 'Input PNG filename has spaces - please remove and try again.';
-} else {
-	// we have a PNG, so we can get the dimensions
-	$imgsize = getimagesize($image_png);
+if($src_ext != 'png' && $src_ext != 'pdf') {
+	$errors[] = 'Input file must be a PNG or PDF. Please obtain a valid PNG or PDF file of the cover image.';
+} elseif(strpos($src_image, ' ') > -1) {
+	$errors[] = 'Input filename has spaces - please remove and try again.';
+} elseif($src_ext == 'png') { // if we have a PNG, check the dimensions
+	$imgsize = getimagesize($src_image);
 	if($imgsize[0] < 1536) {
 		$errors[] = 'Input file must be at least 1536 pixels wide. Please obtain a cover image of appropriate size.';
 	}
@@ -80,15 +81,14 @@ if(count($errors) > 0) {
 $newImage = $brand . '_' . $issue_date . '@2x.jpg';
 
 // add the path
-$split = explode('/', $image_png);
+$split = explode('/', $src_image);
 array_pop($split);
 $split[] = $newImage;
-$image_jpeg = implode('/', $split);
+$final_img = implode('/', $split);
 
-echo $image_jpeg . "\n\n";
+echo $final_img . "\n\n";
 
-$command = "convert \"$image_png\" -verbose -strip -resize ". IMG_WIDTH ."x". $img_height_by_brand[$brand] ."\! pnm:- | mozcjpeg -quality ". QUALITY ." > \"$image_jpeg\"";
-//$command = "convert \"$image_png\" -verbose -strip pnm:- | mozcjpeg -quality ".QUALITY." > \"$image_jpeg\"";
+$command = "convert \"$src_image\" -verbose -strip -resize ". IMG_WIDTH ."x". $img_height_by_brand[$brand] ."\! pnm:- | mozcjpeg -quality ". QUALITY ." > \"$final_img\"";
 
 echo $command . "\n";
 `$command`;
